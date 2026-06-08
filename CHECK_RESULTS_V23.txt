@@ -1,0 +1,16 @@
+CHECK RESULTS V23
+node_syntax: 0
+active_model_count: 6
+step_model_count: 6
+target_model_count: 1
+has_magnet_distance: True
+has_apply_magnet_buffer: True
+has_magnet_sound: True
+has_snap_sound: True
+release_snap_in_magnet: True
+double_snap_guard: True
+instruction_updated: True
+bad_drawRotateButton_rect_param: False
+bad_zone_width: False
+
+Feature: buffered magnetic snapping + Web Audio sound cues.

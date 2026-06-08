@@ -1,0 +1,97 @@
+CHECK RESULTS
+node_syntax: 0
+active_model_count: 6
+step_model_count: 6
+target_model_count: 1
+uses_preserve_origin: True
+uses_target_origin: True
+no_step_centering: True
+target_full_hidden: True
+no_old_original_final_center: True
+top_row_has_computed_starts: True
+bad_drawRotateButton_rect_param: False
+bad_zone_width: False
+
+NEW MODEL DIMENSIONS
+{
+  "target_original_center": [
+    -7.636845111846924e-08,
+    1.0000001192092896,
+    0.01785704493522644
+  ],
+  "target_origin": [
+    1.2600794434547425e-08,
+    1.5949999803304673,
+    -0.002946412414312363
+  ],
+  "single_centers": {
+    "luban_a": [
+      -1.5273690223693848e-07,
+      0.05000000447034836,
+      -0.04999964125454426
+    ],
+    "luban_b": [
+      -0.022727495059370995,
+      1.0000001192092896,
+      -0.9772726893424988
+    ],
+    "luban_c": [
+      0.0,
+      1.0000001192092896,
+      1.0
+    ],
+    "luban_d": [
+      0.8749999701976776,
+      0.9999999403953552,
+      0.0
+    ],
+    "luban_e": [
+      -0.928571492433548,
+      1.0714285969734192,
+      0.03571408987045288
+    ],
+    "luban_f": [
+      0.0,
+      2.0,
+      0.0
+    ]
+  },
+  "computed_top_starts": {
+    "luban_a": [
+      -2.8499999747984113,
+      3.2117499992623926,
+      0.8082499408069999
+    ],
+    "luban_b": [
+      -1.6962499633152037,
+      3.0549999803304675,
+      0.9612499937415123
+    ],
+    "luban_c": [
+      -0.55,
+      3.0549999803304675,
+      0.635
+    ],
+    "luban_d": [
+      0.40562500491738324,
+      3.0550000098347665,
+      0.8
+    ],
+    "luban_e": [
+      1.8532142962515354,
+      3.043214281499386,
+      0.7941071751713753
+    ],
+    "luban_f": [
+      2.85,
+      2.89,
+      0.8
+    ]
+  },
+  "unit_scale": 0.165,
+  "target_center_on_screen": [
+    0,
+    1.76,
+    0
+  ]
+}

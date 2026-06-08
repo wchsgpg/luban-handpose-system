@@ -1,0 +1,15 @@
+node_syntax: 0
+hud_hidden: True
+active_model_count: 6
+step_model_count: 6
+target_model_count: 1
+starts_at_top_y_2_88: True
+reduced_exposure: True
+small_left_zone: True
+target_center: True
+bad_drawRotateButton_rect_param: False
+bad_zone_width: False
+
+models: luban_a.glb, luban_b.glb, luban_c.glb, luban_d.glb, luban_e.glb, luban_f.glb
+steps: step_01_luban_a.glb, step_02_luban_a_b.glb, step_03_luban_a_b_c.glb, step_04_luban_a_b_c_d.glb, step_05_luban_a_b_c_d_e.glb, step_06_luban_a_b_c_d_e_f_final.glb
+targets: target_full.glb

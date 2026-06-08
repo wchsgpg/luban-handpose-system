@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>짜맞춤 구조 인터랙티브 전시</title>
+  <link rel="stylesheet" href="./style.css?v=korean-cover" />
+
+  <!-- Three.js stable non-module build -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+  <!-- p5.js + ml5.js HandPose. This follows the common ml5 handPose detectStart pattern. -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.8/lib/p5.min.js"></script>
+  <script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
+</head>
+<body>
+  <audio id="bgMusic" src="./sounds/background.mp3" loop preload="auto"></audio>
+  <div id="cameraSource" class="camera-source" aria-hidden="true"></div>
+  <div id="p5OverlayContainer"></div>
+
+  <div class="language-switcher" aria-label="Language">
+    <button data-lang="ko" class="is-active">한국어</button>
+    <button data-lang="zh">中文</button>
+    <button data-lang="en">English</button>
+  </div>
+
+  <div id="coverScreen" class="screen cover-screen">
+    <video id="coverVideo" class="cover-video" autoplay muted loop playsinline preload="auto">
+      <source src="./assets/cover/cover_intro.mp4" type="video/mp4">
+    </video>
+    <div class="cover-content">
+      <h1 data-i18n="coverTitle">짜맞춤 구조 인터랙티브 전시</h1>
+      <p data-i18n="coverSubtitle">손동작으로 만나는 전통 목구조</p>
+      <button id="enterSystemBtn" class="enter-system-btn" data-i18n="enterSystem">전시 시작</button>
+    </div>
+    <div id="coverCursor" class="cover-cursor is-hidden"></div>
+    <div id="coverFadeOverlay" class="cover-fade-overlay"></div>
+  </div>
+
+  <div id="buildingScene" class="screen building-screen hidden">
+    <header class="building-header">
+      <div>
+        <p class="eyebrow" data-i18n="systemEyebrow">짜맞춤 구조 인터랙티브 시스템</p>
+        <h1 data-i18n="buildingTitle">전통 목구조 건축 전시</h1>
+        <p data-i18n="buildingSubtitle">손동작 기반 구조 인터랙션</p>
+      </div>
+    </header>
+
+    <section id="buildingStage" class="building-stage">
+      <canvas id="buildingCanvas"></canvas>
+      <div class="building-placeholder">
+        <span data-i18n="buildingPlaceholder">건축 모델 준비 중</span>
+        <small data-i18n="buildingPlaceholderSub">전통 목구조 모델을 준비하고 있습니다</small>
+      </div>
+      <div class="building-gesture-hint" data-i18n="buildingHint">
+        손바닥을 펼치면 구조가 분해되고, 주먹을 쥐면 원래 형태로 돌아갑니다.
+      </div>
+      <div id="buildingCameraPreview" class="building-camera-preview">
+        <canvas id="buildingCameraCanvas" width="220" height="150"></canvas>
+      </div>
+    </section>
+
+    <div id="buildingCursor" class="building-cursor is-hidden"></div>
+
+    <div id="buildingPartViewer" class="building-part-viewer hidden">
+      <div class="building-part-viewer-panel">
+        <div class="building-part-viewer-model">
+          <canvas id="buildingPartViewerCanvas"></canvas>
+        </div>
+        <aside class="building-part-viewer-info">
+          <p class="viewer-eyebrow" data-i18n="buildingPartViewerEyebrow">건축 부재 보기</p>
+          <h2 id="buildingPartViewerTitle">구성 요소 01</h2>
+          <p id="buildingPartViewerBody">
+            손을 움직이면 모델을 회전해서 볼 수 있습니다.
+          </p>
+          <p id="buildingPartViewerHint" class="building-part-viewer-hint">
+            손을 움직이면 모델을 회전해서 볼 수 있습니다.<br>
+            돌아가기 영역에 1.5초 머무르면 건축 전시 화면으로 돌아갑니다.
+          </p>
+          <button id="buildingPartViewerBackZone" class="building-part-viewer-back-zone" data-i18n="back">돌아가기</button>
+        </aside>
+      </div>
+    </div>
+
+    <button id="openLubanGameBtn" class="luban-game-entry" data-i18n="lubanEntry">▦ 노반쇄 체험</button>
+  </div>
+
+  <div id="lubanGameScreen" class="screen luban-game-screen hidden">
+    <button id="backToBuildingBtn" class="back-building-btn" data-i18n="backToBuilding">건축 전시로 돌아가기</button>
+
+  <main class="app">
+    <header>
+      <div>
+        <p class="eyebrow">ml5.js HandPose · p5.js Capture · Three.js GLB</p>
+        <h1 data-i18n="lubanTitle">노반쇄 손동작 조립 체험</h1>
+        <p data-i18n="lubanSubtitle">손동작으로 여섯 개의 목재 블록을 순서대로 조립하며 전통 짜맞춤 구조를 체험합니다.</p>
+      </div>
+      <div class="actions">
+        <button id="startBtn" class="primary" data-i18n="start">시작</button>
+        <button id="musicBtn" aria-label="음악">음악</button>
+        <button id="modelViewBtn" aria-label="모델 보기" data-i18n="modelView">▦ 모델 보기</button>
+        <button id="autoBtn" data-i18n="autoAssembly">자동 조립</button>
+        <button id="resetBtn" data-i18n="reset">초기화</button>
+        <button id="mirrorBtn" data-i18n="mirror">좌우 반전</button>
+      </div>
+    </header>
+
+    <section class="layout">
+      <section class="stage" id="stage">
+        <canvas id="canvas3d"></canvas>
+        <div id="videoPreview">
+          <canvas id="gameCameraCanvas" width="224" height="126"></canvas>
+        </div>
+
+        <div class="hud">
+          <div><span>모델 상태</span><strong id="modelStatus">대기 중</strong></div>
+          <div><span>카메라 상태</span><strong id="cameraStatus">대기 중</strong></div>
+          <div><span>HandPose 상태</span><strong id="handStatus">대기 중</strong></div>
+          <div><span>검출 손 개수</span><strong id="handsCount">0</strong></div>
+          <div><span>손동작</span><strong id="gestureStatus">-</strong></div>
+          <div><span>커서 위치</span><strong id="cursorStatus">-</strong></div>
+          <div><span>선택 블록</span><strong id="selectedStatus">-</strong></div>
+          <div class="bar"><i id="progressBar"></i></div>
+        </div>
+
+        <div id="stepBadge" class="step-badge">단계 1 / 6</div>
+
+        <section id="finalIntroPanel" class="final-intro-panel" aria-label="노반쇄 소개">
+          <h2 data-i18n="finalIntroTitle">노반쇄 · 전통 짜맞춤 구조</h2>
+          <p data-i18n="finalIntroBody">
+            노반쇄는 중국 전통 목구조의 지혜를 담은 짜맞춤 구조 장난감입니다.
+            못이나 접착제를 사용하지 않고, 나무 조각 사이의 정교한 맞물림을 통해 안정적인 구조를 완성합니다.
+            사용자는 손동작을 통해 조립 순서와 구조적 균형을 체험하며, 전통 구조 속의 결합 방식과 공간적 사고를 직관적으로 이해할 수 있습니다.
+          </p>
+        </section>
+
+        <button id="helpBtn" class="help-button" aria-label="조작 안내 열기" onclick="document.getElementById('helpPanel').classList.toggle('is-hidden')">?</button>
+        <aside id="helpPanel" class="help-panel is-hidden" aria-label="조작 안내">
+          <div class="help-panel-head">
+            <h2 data-i18n="help">조작 안내</h2>
+            <button id="helpCloseBtn" aria-label="닫기" onclick="document.getElementById('helpPanel').classList.add('is-hidden')">×</button>
+          </div>
+          <p data-i18n="help1">주먹을 쥐면 현재 단계의 목재 블록을 잡을 수 있습니다.</p>
+          <p data-i18n="help2">손을 카메라에 가까이 가져가면 모델이 앞으로 이동합니다.</p>
+          <p data-i18n="help3">손을 카메라에서 멀리하면 모델이 뒤로 이동합니다.</p>
+          <p data-i18n="help4">올바른 위치에 가까워지면 부드럽게 흡착됩니다.</p>
+          <p data-i18n="help5">흡착된 블록은 고정되며 다시 움직일 수 없습니다.</p>
+          <p data-i18n="help6">좌우 버튼 영역에서 주먹을 쥐면 전체 구조를 회전할 수 있습니다.</p>
+          <p data-i18n="help7">여섯 개 블록을 모두 조립하면 완성된 노반쇄가 확대되어 천천히 회전합니다.</p>
+          <div class="help-log">
+            <h3>Debug Log</h3>
+            <div id="log"></div>
+          </div>
+        </aside>
+      </section>
+    </section>
+  </main>
+  </div>
+
+  <div id="modelViewerOverlay" class="model-viewer-overlay is-hidden" aria-label="모델 보기">
+    <section class="model-viewer-panel">
+      <div class="model-viewer-head">
+        <div>
+          <p class="viewer-eyebrow" data-i18n="viewerEyebrow">노반쇄 구성 블록</p>
+          <h2 data-i18n="modelViewTitle">모델 보기</h2>
+        </div>
+        <button id="modelViewerCloseBtn" class="model-viewer-close" aria-label="닫기">×</button>
+      </div>
+      <div class="model-viewer-body">
+        <div class="model-viewer-tabs" aria-label="모델 선택">
+          <button class="viewer-model-btn is-active" data-model-key="luban_a">luban_a</button>
+          <button class="viewer-model-btn" data-model-key="luban_b">luban_b</button>
+          <button class="viewer-model-btn" data-model-key="luban_c">luban_c</button>
+          <button class="viewer-model-btn" data-model-key="luban_d">luban_d</button>
+          <button class="viewer-model-btn" data-model-key="luban_e">luban_e</button>
+          <button class="viewer-model-btn" data-model-key="luban_f">luban_f</button>
+        </div>
+        <div class="model-viewer-stage">
+          <canvas id="modelViewerCanvas"></canvas>
+          <div id="viewerModelName" class="viewer-model-name">luban_a</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="./app.js?v=korean-cover"></script>
+</body>
+</html>

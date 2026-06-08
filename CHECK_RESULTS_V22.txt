@@ -1,0 +1,48 @@
+CHECK RESULTS V22
+node_syntax: 0
+active_model_count: 6
+step_model_count: 6
+target_model_count: 1
+target_center_y_2_35: True
+bottom_row_y_0_72_computed: True
+has_game_complete_var: True
+has_complete_rotation: True
+right_instruction_no_pinch: True
+right_instruction_has_fist: True
+bad_drawRotateButton_rect_param: False
+bad_zone_width: False
+
+TARGET_CENTER: [0.0, 2.35, 0.0]
+TARGET_ORIGIN: [1.2600794434547425e-08, 2.1849999803304674, -0.002946412414312363]
+BOTTOM_STARTS: {
+  "luban_a": [
+    -2.8499999747984113,
+    0.7117499992623925,
+    0.8882499408069998
+  ],
+  "luban_b": [
+    -1.6962499633152037,
+    0.5549999803304672,
+    1.0412499937415123
+  ],
+  "luban_c": [
+    -0.55,
+    0.5549999803304672,
+    0.715
+  ],
+  "luban_d": [
+    0.40562500491738324,
+    0.5550000098347664,
+    0.88
+  ],
+  "luban_e": [
+    1.8532142962515354,
+    0.5432142814993858,
+    0.8741071751713753
+  ],
+  "luban_f": [
+    2.85,
+    0.38999999999999996,
+    0.88
+  ]
+}
