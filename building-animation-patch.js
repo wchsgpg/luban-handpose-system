@@ -1,32 +1,66 @@
-// Building animation hotfix: restore simultaneous explode/merge with wood impact sounds.
+// Building animation hotfix: simultaneous explode/merge with louder wood impact sounds.
 // Loaded after app.js so it only overrides the buildingScene animation behavior.
 (function () {
   const EXPLODE_LERP = 0.03;
   const MERGE_LERP = 0.028;
-  const EXPLODE_SOUND_THRESHOLD = 0.88;
-  const MERGE_SOUND_THRESHOLD = 0.12;
+  const EXPLODE_SOUND_THRESHOLD = 0.86;
+  const MERGE_SOUND_THRESHOLD = 0.14;
   const NORMAL_SCALE = 1.0;
   const EXPLODE_SCALE = 0.56;
   const soundKeys = new Set();
+  let patchAudioCtx = null;
+  let lastObservedTarget = null;
+
+  function unlockPatchAudio() {
+    try {
+      if (!patchAudioCtx) {
+        patchAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (patchAudioCtx.state === "suspended") patchAudioCtx.resume();
+      if (typeof ensureAudioContext === "function") ensureAudioContext();
+    } catch (err) {}
+  }
+
+  document.addEventListener("pointerdown", unlockPatchAudio, { passive: true });
+  document.addEventListener("touchstart", unlockPatchAudio, { passive: true });
+  document.addEventListener("keydown", unlockPatchAudio);
+
+  function fallbackTone(freq, duration, gain, type) {
+    try {
+      unlockPatchAudio();
+      if (!patchAudioCtx) return;
+      const osc = patchAudioCtx.createOscillator();
+      const amp = patchAudioCtx.createGain();
+      osc.type = type || "triangle";
+      osc.frequency.setValueAtTime(freq, patchAudioCtx.currentTime);
+      amp.gain.setValueAtTime(0.0001, patchAudioCtx.currentTime);
+      amp.gain.exponentialRampToValueAtTime(gain, patchAudioCtx.currentTime + 0.01);
+      amp.gain.exponentialRampToValueAtTime(0.0001, patchAudioCtx.currentTime + duration);
+      osc.connect(amp);
+      amp.connect(patchAudioCtx.destination);
+      osc.start();
+      osc.stop(patchAudioCtx.currentTime + duration + 0.02);
+    } catch (err) {}
+  }
 
   function safeTone(freq, duration, gain, type) {
+    unlockPatchAudio();
     if (typeof playTone === "function") {
-      playTone(freq, duration, gain, type);
+      playTone(freq, duration, Math.min(gain, 0.11), type);
     }
+    fallbackTone(freq, duration, gain, type);
   }
 
   function splitSound() {
-    safeTone(170, 0.08, 0.05, "triangle");
-    setTimeout(() => safeTone(245, 0.075, 0.044, "sine"), 64);
-    safeTone(260, 0.075, 0.076, "triangle");
-    setTimeout(() => safeTone(385, 0.055, 0.052, "sine"), 54);
+    safeTone(155, 0.10, 0.11, "triangle");
+    setTimeout(() => safeTone(235, 0.09, 0.095, "sine"), 55);
+    setTimeout(() => safeTone(330, 0.07, 0.075, "triangle"), 115);
   }
 
   function mergeSound() {
-    safeTone(210, 0.075, 0.058, "triangle");
-    setTimeout(() => safeTone(150, 0.09, 0.062, "sine"), 68);
-    safeTone(118, 0.11, 0.088, "sine");
-    setTimeout(() => safeTone(82, 0.12, 0.06, "triangle"), 58);
+    safeTone(185, 0.10, 0.12, "triangle");
+    setTimeout(() => safeTone(120, 0.13, 0.13, "sine"), 62);
+    setTimeout(() => safeTone(76, 0.15, 0.095, "triangle"), 125);
   }
 
   function smootherStep(t) {
@@ -34,14 +68,23 @@
     return x * x * x * (x * (x * 6 - 15) + 10);
   }
 
+  function resetSoundKeysIfTargetChanged() {
+    if (lastObservedTarget !== buildingExplodeTarget) {
+      lastObservedTarget = buildingExplodeTarget;
+      soundKeys.clear();
+    }
+  }
+
   window.setBuildingExplodeTarget = function patchedSetBuildingExplodeTarget(target) {
     if (buildingExplodeTarget === target) return;
     buildingExplodeTarget = target;
+    lastObservedTarget = target;
     soundKeys.clear();
   };
 
   window.updateBuildingExplodeAnimation = function patchedUpdateBuildingExplodeAnimation() {
     if (!buildingParts || !buildingParts.length) return;
+    resetSoundKeysIfTargetChanged();
 
     buildingExplodeProgress = THREE.MathUtils.lerp(
       buildingExplodeProgress,
